@@ -1,0 +1,9 @@
+Package: com.anonymous.trustctl
+Name: trustctl
+Version: 0.1.0
+Architecture: iphoneos-arm64e
+Description: Trust/untrust root CA certificates via SecTrustStore SPI
+Maintainer: anonymous
+Author: anonymous
+Section: System
+Tag: role::hacker

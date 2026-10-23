@@ -1,0 +1,45 @@
+name: release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    permissions:
+      contents: read
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out
+        uses: actions/checkout@v6.1.0
+
+      - name: Read package version
+        id: package-version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version_count=$(awk '$1 == "Version:" { count++ } END { print count + 0 }' control)
+          version=$(awk '$1 == "Version:" && NF == 2 { print $2 }' control)
+          test "$version_count" -eq 1
+          test -n "$version"
+          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+
+      - name: Download packages
+        uses: actions/download-artifact@v4.1.8
+        with:
+          merge-multiple: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.package-version.outputs.version }}
+          files: "*.deb"
+          generate_release_notes: true
